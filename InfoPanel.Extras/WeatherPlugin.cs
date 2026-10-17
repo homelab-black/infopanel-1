@@ -45,7 +45,7 @@ namespace InfoPanel.Extras
         {
         }
 
-        public override TimeSpan UpdateInterval => TimeSpan.FromMinutes(1);
+        public override TimeSpan UpdateInterval => TimeSpan.FromMinutes(10);
 
         public IReadOnlyList<PluginConfigProperty> ConfigProperties =>
         [

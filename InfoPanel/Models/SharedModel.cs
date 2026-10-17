@@ -1,10 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InfoPanel.Drawing;
+using InfoPanel.Enums;
 using InfoPanel.Extensions;
 using InfoPanel.Models;
 using InfoPanel.Services;
 using InfoPanel.Utils;
+using InfoPanel.Views.Components;
 using Serilog;
 using SkiaSharp;
 using System;
@@ -20,6 +22,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -48,6 +51,13 @@ namespace InfoPanel
         public bool IsDirty => SelectedProfile is Profile p && _dirtyPerProfile.TryGetValue(p.Guid, out var d) && d;
         /// <summary>Raised when MarkDirty() is called so autosave can reset its idle timer.</summary>
         public event Action? DirtyChanged;
+
+        private readonly ScreenRenderManager _screenRenderManager = new();
+
+        public ScreenRenderManager ScreenRenderManager => _screenRenderManager;
+        private readonly CancellationTokenSource _periodicTimerCts = new();
+        private readonly Task _periodicTimerTask;
+
         public void MarkDirty()
         {
             if (SelectedProfile is Profile p)
@@ -174,6 +184,18 @@ namespace InfoPanel
                 foreach (var child in coll)
                     SubscribeDisplayItemForUndo(child, profile);
             }
+            if (item is IPluginSensorItem sensorItem)
+            {
+                if (item.Hidden)
+                {
+                    _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
+                }
+                else
+                {
+                    _screenRenderManager.AddItemToProfile(sensorItem.PluginSensorId, profile.Guid);
+                }
+            }
+
         }
 
         private void UnsubscribeDisplayItemForUndo(DisplayItem? item)
@@ -193,6 +215,18 @@ namespace InfoPanel
         private void DisplayItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (_isUndoRedoInProgress || SelectedProfile is not Profile profile) return;
+            if (e.PropertyName == nameof(DisplayItem.Hidden) && sender is DisplayItem item && item is IPluginSensorItem sensorItem)
+            {
+                if (item.Hidden)
+                {
+                    _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
+                }
+                else
+                {
+                    _screenRenderManager.AddItemToProfile(sensorItem.PluginSensorId, profile.Guid);
+                }
+            }
+
             var debouncer = _propertyChangeDebouncers.GetOrAdd(profile.Guid, _ => new Debouncer());
             debouncer.Debounce(() =>
             {
@@ -533,7 +567,10 @@ namespace InfoPanel
         [ObservableProperty]
         private GroupDisplayItem? _dragHoverGroup;
 
-        private SharedModel() { }
+        private SharedModel()
+        {
+            _periodicTimerTask = PeriodicTimerAsync(TimeSpan.FromSeconds(3), _periodicTimerCts.Token);
+        }
 
         private void PushUndoSnapshot(Profile profile, ObservableCollection<DisplayItem> displayItems)
         {
@@ -573,6 +610,15 @@ namespace InfoPanel
                 SelectedItem = newDisplayItem;
                 UpdateLastStateSnapshot();
             });
+            if (newDisplayItem is IPluginSensorItem sensorItem)
+            {
+                if (newDisplayItem.Hidden)
+                    _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
+                else
+                {
+                    _screenRenderManager.AddItemToProfile(sensorItem.PluginSensorId, profile.Guid);
+                }
+            }
         }
 
         public void RemoveDisplayItem(DisplayItem displayItem)
@@ -606,6 +652,10 @@ namespace InfoPanel
                 }
                 UpdateLastStateSnapshot();
             });
+            if (displayItem is IPluginSensorItem sensorItem)
+            {
+                _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
+            }
         }
 
         /// <summary>
@@ -627,6 +677,11 @@ namespace InfoPanel
                 foreach (var item in roots)
                 {
                     FindParentCollection(item, out _)?.Remove(item);
+                    if (item is IPluginSensorItem sensorItem)
+                    {
+                        _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
+                    }
+
                 }
 
                 UpdateLastStateSnapshot();
@@ -1283,5 +1338,29 @@ namespace InfoPanel
             }
         }
 
+        private async Task PeriodicTimerAsync(TimeSpan period, CancellationToken token)
+        {
+            using var timer = new PeriodicTimer(period);
+
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                _screenRenderManager.RefreshAllVersions();
+            }
+        }
+
+        public void Dispose()
+        {
+            _periodicTimerCts.Cancel();
+
+            try
+            {
+                _periodicTimerTask.GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            _periodicTimerCts.Dispose();
+        }
     }
 }

@@ -8,6 +8,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using InfoPanel.Models;
 using InfoPanel.Monitors.PluginProxies;
 using InfoPanel.Plugins;
 using InfoPanel.Plugins.Ipc;
@@ -405,6 +406,7 @@ namespace InfoPanel.Monitors
                             }
                             break;
                     }
+                    SharedModel.Instance.ScreenRenderManager.IncVersionByItem($"/{batch.PluginId}/{key}");
                 }
             }
         }
@@ -638,6 +640,10 @@ namespace InfoPanel.Monitors
                 _hostProcess.Dispose();
                 _hostProcess = null;
             }
+        }
+        public void OnImageUpdate(string pluginId, string imageId)
+        {
+            SharedModel.Instance.ScreenRenderManager.IncVersionByItem($"/{pluginId}/__images_{pluginId}/{imageId}");
         }
     }
 }

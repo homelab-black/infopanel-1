@@ -36,6 +36,7 @@ namespace InfoPanel.Plugins.Graphics
         private readonly object _sync = new();
 
         private const int HeaderSize = 16;
+        public event Action<PluginImageWriter>? Invalidated;
 
         /// <summary>
         /// Raised after a successful resize. Host subscribes to notify the main app.
@@ -86,6 +87,8 @@ namespace InfoPanel.Plugins.Graphics
                 Bitmap = CreateBitmapForBuffer(_writeIndex);
                 old?.Dispose();
             }
+
+            Invalidated?.Invoke(this);
         }
 
         public void Resize(int newWidth, int newHeight)

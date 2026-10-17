@@ -61,6 +61,8 @@ namespace InfoPanel.Services
 
 
         public ThermalrightPanelDevice Device => _device;
+        private long _sentVersion = -1;
+        private readonly Stopwatch _keepAliveStopwatch = Stopwatch.StartNew();
 
         public ThermalrightPanelDeviceTask(ThermalrightPanelDevice device)
         {
@@ -1916,9 +1918,22 @@ namespace InfoPanel.Services
                         }
 
                         stopwatch.Restart();
-                        var frame = GenerateFrameBuffer();
-                        Interlocked.Exchange(ref _latestFrame, frame);
-                        _frameAvailable.Set();
+                        var currentVersion = SharedModel.Instance.ScreenRenderManager.GetVersion(_device.ProfileGuid);
+                        if (_sentVersion != currentVersion)
+                        {
+                            _sentVersion = currentVersion;
+                            var frame = GenerateFrameBuffer();
+                            Interlocked.Exchange(ref _latestFrame, frame);
+                            _frameAvailable.Set();
+                        }
+                        else if (_keepAliveStopwatch.ElapsedMilliseconds >= 500)
+                        {
+                        	// THERMALRIGHT のパネルは一定時間データ受信がないとデフォルト画面に切り替わるため、定期的に画面データを送信する必要がある。
+                            var frame = GenerateFrameBuffer();
+                            Interlocked.Exchange(ref _latestFrame, frame);
+                            _frameAvailable.Set();
+                            _keepAliveStopwatch.Restart();
+                        }
 
                         var targetFrameTime = 1000 / Math.Max(1, _device.TargetFrameRate);
                         var adaptiveFrameTime = 0;

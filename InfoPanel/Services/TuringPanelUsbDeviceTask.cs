@@ -23,6 +23,7 @@ namespace InfoPanel.Services
         private readonly int _panelHeight;
 
         public TuringPanelDevice Device => _device;
+        private long _sentVersion = -1;
 
         public TuringPanelUsbDeviceTask(TuringPanelDevice device)
         {
@@ -171,14 +172,18 @@ namespace InfoPanel.Services
                         while (!renderToken.IsCancellationRequested)
                         {
                             stopwatch1.Restart();
-                            var frame = GenerateLcdBuffer();
-
-                            if (frame != null)
+                            var currentVersion = SharedModel.Instance.ScreenRenderManager.GetVersion(_device.ProfileGuid);
+                            if (_sentVersion != currentVersion)
                             {
-                                var oldFrame = Interlocked.Exchange(ref _latestFrame, frame);
-                                _frameAvailable.Set();
-                            }
+                                _sentVersion = currentVersion;
+                                var frame = GenerateLcdBuffer();
 
+                                if (frame != null)
+                                {
+                                    var oldFrame = Interlocked.Exchange(ref _latestFrame, frame);
+                                    _frameAvailable.Set();
+                                }
+                            }
                             var targetFrameTime = 1000 / Math.Max(1, _device.TargetFrameRate);
                             var desiredFrameTime = Math.Max((int)(fpsCounter.FrameTime), targetFrameTime);
                             var adaptiveFrameTime = 0;

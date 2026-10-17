@@ -441,8 +441,9 @@ namespace InfoPanel.Drawing
                             value = value * Math.Max(frameRect.Width, frameRect.Height);
                             value = Math.Round(value, 0, MidpointRounding.AwayFromZero);
 
-                            GraphDataSmoothCache.TryGetValue(chartDisplayItem.Guid, out double lastValue);
-                            value = preview ? value : InterpolateWithCycles(lastValue, value, ConfigModel.Instance.Settings.TargetFrameRate * 3);
+                            // MpcBe_foobar2000_Viewer 向けにアニメーションを無効化
+                            // GraphDataSmoothCache.TryGetValue(chartDisplayItem.Guid, out double lastValue);
+                            // value = preview ? value : InterpolateWithCycles(lastValue, value, ConfigModel.Instance.Settings.TargetFrameRate * 3);
                             GraphDataSmoothCache.Set(chartDisplayItem.Guid, value, TimeSpan.FromSeconds(5));
 
                             // Inset fill/background when the frame is drawn so the 1px AA stroke

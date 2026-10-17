@@ -23,7 +23,7 @@ namespace InfoPanel.LianLiPanel
             {
                 Model = LianLiPanelModel.UniversalScreen92Inch,
                 Name = "Lian Li Universal Screen 9.2\"",
-                Width = 464,
+                Width = 462,
                 Height = 1920,
                 VendorId = LianLiVendorId,
                 ProductId = 0xa092,

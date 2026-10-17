@@ -117,6 +117,7 @@ namespace InfoPanel
                 screen.SetBrightness((byte)brightness);
 
                 SKBitmap? sentBitmap = null;
+                long sentVersion = -1;
 
                 try
                 {
@@ -134,38 +135,44 @@ namespace InfoPanel
                             screen.SetBrightness((byte)brightness);
                         }
 
-                        var bitmap = GenerateLcdBitmap();
-
-                        if (bitmap != null)
+                        var currentVersion = SharedModel.Instance.ScreenRenderManager.GetVersion(_device.ProfileGuid);
+                        if (sentVersion != currentVersion)
                         {
-                            if (sentBitmap == null || !canDisplayPartialBitmap)
-                            {
-                                sentBitmap = bitmap;
+                            var bitmap = GenerateLcdBitmap();
 
-                                canDisplayPartialBitmap = screen.DisplayBuffer(screen.CreateBufferFrom(sentBitmap));
-                                //Trace.WriteLine($"Full sector update: {stopwatch.ElapsedMilliseconds}ms");
-                            }
-                            else
-                            {
-                                var sectors = SKBitmapComparison.GetChangedSectors(sentBitmap, bitmap, _sectorWidth, _sectorHeight, _maxSectorWidth, _maxSectorHeight);
-                                //Trace.WriteLine($"Sector detect: {sectors.Count} sectors {stopwatch.ElapsedMilliseconds}ms");
 
-                                if (sectors.Count > _maxSectors)
+                            if (bitmap != null)
+                            {
+                                if (sentBitmap == null || !canDisplayPartialBitmap)
                                 {
-                                    canDisplayPartialBitmap = screen.DisplayBuffer(screen.CreateBufferFrom(bitmap));
+                                    sentBitmap = bitmap;
+
+                                    canDisplayPartialBitmap = screen.DisplayBuffer(screen.CreateBufferFrom(sentBitmap));
                                     //Trace.WriteLine($"Full sector update: {stopwatch.ElapsedMilliseconds}ms");
                                 }
                                 else
                                 {
-                                    foreach (var sector in sectors)
-                                    {
-                                        canDisplayPartialBitmap = screen.DisplayBuffer(sector.Left, sector.Top, screen.CreateBufferFrom(bitmap, sector.Left, sector.Top, sector.Width, sector.Height));
-                                    }
+                                    var sectors = SKBitmapComparison.GetChangedSectors(sentBitmap, bitmap, _sectorWidth, _sectorHeight, _maxSectorWidth, _maxSectorHeight);
+                                    //Trace.WriteLine($"Sector detect: {sectors.Count} sectors {stopwatch.ElapsedMilliseconds}ms");
 
-                                    //Trace.WriteLine($"Sector update: {stopwatch.ElapsedMilliseconds}ms");
+                                    if (sectors.Count > _maxSectors)
+                                    {
+                                        canDisplayPartialBitmap = screen.DisplayBuffer(screen.CreateBufferFrom(bitmap));
+                                        //Trace.WriteLine($"Full sector update: {stopwatch.ElapsedMilliseconds}ms");
+                                    }
+                                    else
+                                    {
+                                        foreach (var sector in sectors)
+                                        {
+                                            canDisplayPartialBitmap = screen.DisplayBuffer(sector.Left, sector.Top, screen.CreateBufferFrom(bitmap, sector.Left, sector.Top, sector.Width, sector.Height));
+                                        }
+
+                                        //Trace.WriteLine($"Sector update: {stopwatch.ElapsedMilliseconds}ms");
+                                    }
+                                    sentBitmap?.Dispose();
+                                    sentBitmap = bitmap;
+                                    sentVersion = currentVersion;
                                 }
-                                sentBitmap?.Dispose();
-                                sentBitmap = bitmap;
                             }
                         }
 
