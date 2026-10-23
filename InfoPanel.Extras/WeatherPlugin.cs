@@ -45,6 +45,7 @@ namespace InfoPanel.Extras
         {
         }
 
+        // 天気情報を毎分取得した場合無料枠を超えるため、10分に変更。(天気情報なので実質影響しない)
         public override TimeSpan UpdateInterval => TimeSpan.FromMinutes(10);
 
         public IReadOnlyList<PluginConfigProperty> ConfigProperties =>

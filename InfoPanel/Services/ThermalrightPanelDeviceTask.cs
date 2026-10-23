@@ -1926,9 +1926,9 @@ namespace InfoPanel.Services
                             Interlocked.Exchange(ref _latestFrame, frame);
                             _frameAvailable.Set();
                         }
-                        else if (_keepAliveStopwatch.ElapsedMilliseconds >= 500)
+                        else if (_keepAliveStopwatch.ElapsedMilliseconds >= 1500)
                         {
-                        	// THERMALRIGHT のパネルは一定時間データ受信がないとデフォルト画面に切り替わるため、定期的に画面データを送信する必要がある。
+                        	// THERMALRIGHT のパネルは一定時間(実測で3秒間)データ受信がないとデフォルト画面に切り替わるため、定期的に画面データを送信する必要がある。
                             var frame = GenerateFrameBuffer();
                             Interlocked.Exchange(ref _latestFrame, frame);
                             _frameAvailable.Set();

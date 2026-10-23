@@ -8,7 +8,6 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using InfoPanel.Models;
 using InfoPanel.Monitors.PluginProxies;
 using InfoPanel.Plugins;
 using InfoPanel.Plugins.Ipc;

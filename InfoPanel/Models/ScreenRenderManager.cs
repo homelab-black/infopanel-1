@@ -28,7 +28,7 @@ namespace InfoPanel.Models
             var newVersion = _screenVersion.AddOrUpdate(profileId, 1, (_, current) => current + 1);
 
             profiles.AddOrUpdate(profileId, newVersion, (_, _) => newVersion);
-//            Logger.Debug("Added item: {ItemKey} to profile: {ProfileId}. Incremented version to: {Version}", itemKey, profileId, newVersion);
+            // Logger.Debug("Added item: {ItemKey} to profile: {ProfileId}. Incremented version to: {Version}", itemKey, profileId, newVersion);
         }
 
         public void RemoveItemFromProfile(string itemKey, Guid profileId)
@@ -43,7 +43,7 @@ namespace InfoPanel.Models
                 }
 
                 var newVersion = _screenVersion.AddOrUpdate(profileId, 1, (_, current) => current + 1);
-//                Logger.Debug("Removed item: {ItemKey} from profile: {ProfileId}. Incremented version to: {Version}", itemKey, profileId, newVersion);
+                // Logger.Debug("Removed item: {ItemKey} from profile: {ProfileId}. Incremented version to: {Version}", itemKey, profileId, newVersion);
             }
         }
 
@@ -59,7 +59,7 @@ namespace InfoPanel.Models
                 var newVersion = _screenVersion.AddOrUpdate(profileId, 1, (_, current) => current + 1);
 
                 profiles.AddOrUpdate(profileId, newVersion, (_, _) => newVersion);
-//                Logger.Debug("Incremented version for profile: {ProfileId} due to item: {ItemKey}. New version: {Version}", profileId, itemKey, newVersion);
+                // Logger.Debug("Incremented version for profile: {ProfileId} due to item: {ItemKey}. New version: {Version}", profileId, itemKey, newVersion);
             }
         }
 
@@ -92,7 +92,7 @@ namespace InfoPanel.Models
                     if (itemProfiles.ContainsKey(profileId))
                     {
                         itemProfiles.AddOrUpdate(profileId, newVersion, (_, _) => newVersion);
-//                        Logger.Debug("Refreshed item: {ItemKey} in profile: {ProfileId} to version: {Version}", itemKey, profileId, newVersion);
+                        // Logger.Debug("Refreshed item: {ItemKey} in profile: {ProfileId} to version: {Version}", itemKey, profileId, newVersion);
                     }
                 }
             }

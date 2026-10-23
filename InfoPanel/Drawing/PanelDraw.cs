@@ -29,7 +29,7 @@ namespace InfoPanel.Drawing
             _selectionStopwatch.Start();
         }
 
-        public static void Run(Profile profile, SkiaGraphics g, bool preview = false, float scale = 1, bool cache = true, string cacheHint = "default", FpsCounter? fpsCounter = null, long? sentVersion = null)
+        public static void Run(Profile profile, SkiaGraphics g, bool preview = false, float scale = 1, bool cache = true, string cacheHint = "default", FpsCounter? fpsCounter = null)
         {
             var stopwatch = Stopwatch.StartNew();
 
@@ -43,7 +43,7 @@ namespace InfoPanel.Drawing
             foreach (var displayItem in SharedModel.Instance.GetProfileDisplayItemsCopy(profile))
             {
                 if (displayItem.Hidden) continue;
-                Draw(g, preview, scale, cache, cacheHint, displayItem, selectedRectangles, sentVersion);
+                Draw(g, preview, scale, cache, cacheHint, displayItem, selectedRectangles);
             }
 
 
@@ -197,7 +197,7 @@ namespace InfoPanel.Drawing
             return null;
         }
 
-        private static void Draw(SkiaGraphics g, bool preview, float scale, bool cache, string cacheHint, DisplayItem displayItem, List<SelectedRectangle> selectedRectangles, long? sentVersion)
+        private static void Draw(SkiaGraphics g, bool preview, float scale, bool cache, string cacheHint, DisplayItem displayItem, List<SelectedRectangle> selectedRectangles)
         {
             var x = (int)Math.Floor(displayItem.X * scale);
             var y = (int)Math.Floor(displayItem.Y * scale);
@@ -209,7 +209,7 @@ namespace InfoPanel.Drawing
                         foreach (var item in groupDisplayItem.DisplayItemsCopy)
                         {
                             if (item.Hidden) continue;
-                            Draw(g, preview, scale, cache, cacheHint, item, selectedRectangles, sentVersion);
+                            Draw(g, preview, scale, cache, cacheHint, item, selectedRectangles);
                         }
                         break;
                     }

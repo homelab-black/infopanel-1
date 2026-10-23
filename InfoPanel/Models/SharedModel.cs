@@ -195,7 +195,17 @@ namespace InfoPanel
                     _screenRenderManager.AddItemToProfile(sensorItem.PluginSensorId, profile.Guid);
                 }
             }
-
+            if (item is ILibreSensorItem LibreSensorItem)
+            {
+                if (item.Hidden)
+                {
+                    _screenRenderManager.RemoveItemFromProfile(LibreSensorItem.LibreSensorId, profile.Guid);
+                }
+                else
+                {
+                    _screenRenderManager.AddItemToProfile(LibreSensorItem.LibreSensorId, profile.Guid);
+                }
+            }
         }
 
         private void UnsubscribeDisplayItemForUndo(DisplayItem? item)
@@ -569,7 +579,8 @@ namespace InfoPanel
 
         private SharedModel()
         {
-            _periodicTimerTask = PeriodicTimerAsync(TimeSpan.FromSeconds(3), _periodicTimerCts.Token);
+            // グラフの更新頻度の既定値は1秒であり、LHMやHWiNFOの情報取得間隔は1秒で問題ない（と思う）
+            _periodicTimerTask = PeriodicTimerAsync(TimeSpan.FromSeconds(1), _periodicTimerCts.Token);
         }
 
         private void PushUndoSnapshot(Profile profile, ObservableCollection<DisplayItem> displayItems)
@@ -619,6 +630,16 @@ namespace InfoPanel
                     _screenRenderManager.AddItemToProfile(sensorItem.PluginSensorId, profile.Guid);
                 }
             }
+            if (newDisplayItem is ILibreSensorItem libreSensorItem)
+            {
+                if (newDisplayItem.Hidden)
+                    _screenRenderManager.RemoveItemFromProfile(libreSensorItem.LibreSensorId, profile.Guid);
+                else
+                {
+                    _screenRenderManager.AddItemToProfile(libreSensorItem.LibreSensorId, profile.Guid);
+                }
+
+            }
         }
 
         public void RemoveDisplayItem(DisplayItem displayItem)
@@ -656,6 +677,10 @@ namespace InfoPanel
             {
                 _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
             }
+            if (displayItem is ILibreSensorItem libreSensorItem)
+            {
+                _screenRenderManager.RemoveItemFromProfile(libreSensorItem.LibreSensorId, profile.Guid);
+            }
         }
 
         /// <summary>
@@ -680,6 +705,10 @@ namespace InfoPanel
                     if (item is IPluginSensorItem sensorItem)
                     {
                         _screenRenderManager.RemoveItemFromProfile(sensorItem.PluginSensorId, profile.Guid);
+                    }
+                    if (item is ILibreSensorItem libreSensorItem)
+                    {
+                        _screenRenderManager.RemoveItemFromProfile(libreSensorItem.LibreSensorId, profile.Guid);
                     }
 
                 }

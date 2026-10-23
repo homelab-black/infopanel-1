@@ -6,9 +6,9 @@ using System;
 using Serilog;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using TuringSmartScreenLib;
 using TuringSmartScreenLib.Helpers.SkiaSharp;
-using System.Diagnostics;
 
 namespace InfoPanel
 {

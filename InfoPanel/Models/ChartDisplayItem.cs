@@ -337,6 +337,15 @@ namespace InfoPanel.Models
                 { }
             }
         }
+        private bool _animation = true;
+        public bool Animation
+        {
+            get { return _animation; }
+            set
+            {
+                SetProperty(ref _animation, value);
+            }
+        }
 
         public ChartDisplayItem() { }
 
