@@ -367,7 +367,8 @@ namespace InfoPanel.Models
             {
                 var profileInfo = ProfileInfos.GetOrAdd(enableProfileId, _ => new ProfileInfo());
                 var targetFps = Math.Min(MaxTargetFrameRateProfileByDisplayItem[enableProfileId], MaxTargetFrameRateProfileByPanel[enableProfileId]);
-                profileInfo.UpdateMaxFps(Math.Max(MinimumProfileRefreshFps, targetFps));
+                //profileInfo.UpdateMaxFps(Math.Max(MinimumProfileRefreshFps, targetFps));
+                profileInfo.UpdateMaxFps(targetFps);
                 profileInfo.IncVersion();
                 Logger.Debug("Increment Profile version. {ProfileId} : {targtFps} FPS : {version}", enableProfileId, Math.Min(MaxTargetFrameRateProfileByDisplayItem[enableProfileId], MaxTargetFrameRateProfileByPanel[enableProfileId]), profileInfo.GetVersion());
             }
