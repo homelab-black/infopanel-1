@@ -701,6 +701,7 @@ namespace InfoPanel
                     {
                         lock (_settingsLock)
                         {
+                            Settings.Language = settings.Language;
                             Settings.UiWidth = settings.UiWidth;
                             Settings.UiHeight = settings.UiHeight;
                             Settings.UiScale = settings.UiScale;
